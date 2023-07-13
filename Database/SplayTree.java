@@ -1,10 +1,12 @@
 package Database;
 
+import Interface.Product;
+
 class Node {
-    int key;
+    Product key;
     Node parent, left, right;
 
-    public Node(int key) {
+    public Node(Product key) {
         this.key = key;
         parent = left = right = null;
     }
@@ -98,16 +100,16 @@ public class SplayTree {
     }
 
     // Insert a key into the tree
-    public void insert(int key) {
+    public void insert(Product key) {
         Node newNode = new Node(key);
         Node x = root;
         Node parent = null;
 
         while (x != null) {
             parent = x;
-            if (key < x.key) {
+            if (key.getPrice() < x.key.getPrice()) {
                 x = x.left;
-            } else if (key > x.key) {
+            } else if (key.getPrice() > x.key.getPrice()) {
                 x = x.right;
             } else {
                 // Key already exists, move it to the root
@@ -119,7 +121,7 @@ public class SplayTree {
         newNode.parent = parent;
         if (parent == null) {
             root = newNode;
-        } else if (key < parent.key) {
+        } else if (key.getPrice() < parent.key.getPrice()) {
             parent.left = newNode;
         } else {
             parent.right = newNode;
@@ -129,13 +131,13 @@ public class SplayTree {
     }
 
     // Search for a key in the tree and splay it to the root
-    public boolean search(int key) {
+    public boolean search(Product key) {
         Node x = root;
 
         while (x != null) {
-            if (key < x.key) {
+            if (key.getPrice() < x.key.getPrice()) {
                 x = x.left;
-            } else if (key > x.key) {
+            } else if (key.getPrice() > x.key.getPrice()) {
                 x = x.right;
             } else {
                 // Key found, splay it to the root
@@ -148,7 +150,7 @@ public class SplayTree {
     }
 
     // Remove a key from the tree
-    public void remove(int key) {
+    public void remove(Product key) {
         Node node = searchNode(key);
         if (node == null) {
             return; // Key not found, nothing to remove
@@ -196,13 +198,13 @@ public class SplayTree {
     }
 
     // Helper method to search for a node with a given key in the tree
-    private Node searchNode(int key) {
+    private Node searchNode(Product key) {
         Node x = root;
 
         while (x != null) {
-            if (key < x.key) {
+            if (key.getPrice() < x.key.getPrice()) {
                 x = x.left;
-            } else if (key > x.key) {
+            } else if (key.getPrice() > x.key.getPrice()) {
                 x = x.right;
             } else {
                 // Key found
