@@ -131,22 +131,14 @@ public class SplayTree {
     }
 
     // Search for a key in the tree and splay it to the root
-    public boolean search(Product key) {
-        Node x = root;
-
-        while (x != null) {
-            if (key.getPrice() < x.key.getPrice()) {
-                x = x.left;
-            } else if (key.getPrice() > x.key.getPrice()) {
-                x = x.right;
-            } else {
-                // Key found, splay it to the root
-                splay(x);
-                return true;
-            }
-        }
-
-        return false; // Key not found
+    public Product search(Product key) {
+        Node x = searchNode(key);
+        if (x == null) {
+            return null;// Key not found
+        } else
+            // Key found, splay it to the root
+            splay(x);
+        return x.key;
     }
 
     // Remove a key from the tree
