@@ -10,7 +10,7 @@ class Node {
     }
 }
 
-class SplayTree {
+public class SplayTree {
     private Node root;
 
     // Constructor
