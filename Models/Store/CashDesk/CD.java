@@ -7,6 +7,8 @@ import Interface.Product;
 
 public class CD implements CashDesk {
 
+    SL list = new SL();
+
     @Override
     public void addtoShopingList(Product product) {
         // TODO Auto-generated method stub
@@ -17,12 +19,6 @@ public class CD implements CashDesk {
     public void removefromShopingList(Product product) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'removefromShopingList'");
-    }
-
-    @Override
-    public void Display() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'Display'");
     }
 
     @Override
