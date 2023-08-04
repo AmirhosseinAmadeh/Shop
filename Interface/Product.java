@@ -12,5 +12,6 @@ public interface Product {
      String getName();
      Date getMFG();
      Date getEXP();
+     int getId();
     
 }
