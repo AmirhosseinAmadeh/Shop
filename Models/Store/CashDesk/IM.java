@@ -4,6 +4,7 @@ import Interface.Item;
 
 public class IM implements Item {
     String name;
+    Double price;
     int id;
     
 
@@ -21,6 +22,11 @@ public class IM implements Item {
     public int getId() {
         return id;
     }
+    @Override
+    public Double getPrice() {
+        return price;
+    }
+    
 
     
 }
