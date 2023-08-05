@@ -3,17 +3,24 @@ package Models.Store.CashDesk;
 import Interface.Item;
 
 public class IM implements Item {
+    String name;
+    int id;
+    
 
-    @Override
-    public String getname() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getname'");
+    public IM(String name, int id) {
+        this.name = name;
+        this.id = id;
     }
 
     @Override
-    public int getid() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getid'");
+    public String getName() {
+        return name;
     }
+
+    @Override
+    public int getId() {
+        return id;
+    }
+
     
 }
