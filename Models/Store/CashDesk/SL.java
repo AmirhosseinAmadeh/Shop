@@ -10,8 +10,12 @@ public class SL implements ShopingList {
 
     @Override
     public void Display() {
-        // TODO Auto-generated method stub
-        
+        System.out.println("--------------------------------");
+        int count = 0;
+        for (IM im : list) {
+            System.out.print(count++);
+            System.out.println(". | ".concat(im.getName()).concat(" | ").concat(im.getPrice().toString()));
+        }
     }
     
 }
