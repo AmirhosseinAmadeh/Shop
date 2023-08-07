@@ -4,29 +4,27 @@ import Interface.Item;
 
 public class IM implements Item {
     String name;
+    String company;
     Double price;
-    int id;
-    
-
-    public IM(String name, int id) {
-        this.name = name;
-        this.id = id;
-    }
-
+    int counter;
     @Override
     public String getName() {
         return name;
     }
-
     @Override
-    public int getId() {
-        return id;
+    public String getCompany() {
+        return company;
     }
     @Override
     public Double getPrice() {
         return price;
     }
+    @Override
+    public int getCounter() {
+        return counter;
+    }
     
+
 
     
 }
