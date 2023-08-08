@@ -15,7 +15,11 @@ public class SL implements ShopingList {
         int count = 0;
         for (IM im : list) {
             System.out.print(count++);
-            System.out.println(". | ".concat(im.getName()).concat(" | ").concat(im.getPrice().toString()));
+            // 3. | shir mihan | 20,000 | 3 | 60,000 |
+            System.out.println(". | ".concat(im.getName()).concat(" ").concat(im.getCompany()).concat(" | ")
+                    .concat(im.getPrice().toString()).concat(" | ")
+                    .concat(im.getCounter().toString().concat(" | ").concat(im.getFinalPrice().toString()))
+                    .concat(" |\n --------------------------------"));
         }
     }
 
