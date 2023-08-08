@@ -4,5 +4,6 @@ public interface Item {
     String getName();
     Double getPrice();
     String getCompany();
-    int getCounter();
+    Integer getCounter();
+    Double getFinalPrice();
 }
