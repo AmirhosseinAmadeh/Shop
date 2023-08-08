@@ -19,6 +19,7 @@ public class SL implements ShopingList {
         }
     }
 
+    @Override
     public void add(Pt product) {
         IM tempItem = new IM(product.getName(), product.getCompany(), product.getPrice());
         // new item
