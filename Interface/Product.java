@@ -10,6 +10,7 @@ public interface Product {
 
      double getPrice();
      String getName();
+     String getCompany();
      Date getMFG();
      Date getEXP();
      int getId();
