@@ -6,7 +6,7 @@ public class IM implements Item {
     String name;
     String company;
     Double price;
-    int counter;
+    Integer counter;
 
     @Override
     public String getName() {
@@ -24,7 +24,7 @@ public class IM implements Item {
     }
 
     @Override
-    public int getCounter() {
+    public Integer getCounter() {
         return counter;
     }
 
@@ -37,6 +37,11 @@ public class IM implements Item {
 
     public void oneMore() {
         counter++;
+    }
+
+    @Override
+    public Double getFinalPrice() {
+        return price * counter;
     }
 
 }
