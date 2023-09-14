@@ -1,18 +1,18 @@
 package Models.Store.CashDesk;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import Interface.CashDesk;
 import Interface.Product;
 
 public class CD implements CashDesk {
 
-    SL list = new SL();
+    List<SL> list = new ArrayList<>();// shoping lists of  day
 
     @Override
-    public void addtoShopingList(Product product) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'addtoShopingList'");
+    public void newShopingList() {
+        SL shopingListSl = new SL();
     }
 
     @Override
