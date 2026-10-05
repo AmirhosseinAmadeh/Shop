@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FreshShop</title>
+<style>
+:root{--bg:#f5f7f4;--panel:#fff;--ink:#1d2a22;--mute:#667568;--line:#e2e8e1;--brand:#1f8a4c;--brand-ink:#fff;--warn:#c8441b;--amber:#b7791f;--chip:#eaf5ee}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1511;--panel:#171f19;--ink:#e6efe8;--mute:#8fa194;--line:#26322a;--brand:#3cc473;--brand-ink:#08130c;--warn:#ff8a5f;--amber:#f0b44c;--chip:#1d2b21}}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.5 -apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{display:flex;justify-content:space-between;align-items:center;padding:20px 28px 6px;flex-wrap:wrap;gap:8px}
+h1{margin:0;font-size:22px}h1 span{color:var(--brand)}
+.date{color:var(--mute)}
+main{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;padding:12px 28px 40px;max-width:1280px;margin:0 auto}
+@media(max-width:900px){main{grid-template-columns:1fr;padding:12px 16px 40px}header{padding:16px}}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px;grid-column:1/-1}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.stat b{display:block;font-size:22px}.stat small{color:var(--mute);text-transform:uppercase;font-size:11px;letter-spacing:.05em}
+.stat.warn b{color:var(--warn)}.stat.ok b{color:var(--brand)}
+section{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin-bottom:16px;overflow:hidden}
+section h2{margin:0;padding:12px 16px;font-size:14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:8px 16px;border-bottom:1px solid var(--line)}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute)}tr:last-child td{border-bottom:0}
+td.n,th.n{text-align:right}
+.badge{display:inline-block;padding:1px 8px;border-radius:99px;font-size:12px;font-weight:600;background:var(--chip);color:var(--brand)}
+.badge.sale{background:rgba(200,68,27,.14);color:var(--warn)}.badge.soon{background:rgba(183,121,31,.16);color:var(--amber)}
+.old{text-decoration:line-through;color:var(--mute);margin-right:6px}
+button{font:inherit;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:5px 12px;cursor:pointer}
+button.primary{background:var(--brand);color:var(--brand-ink);border-color:var(--brand);font-weight:600}
+button:disabled{opacity:.5;cursor:default}
+.cart{position:sticky;top:12px;align-self:start}
+.cart ul{list-style:none;margin:0;padding:0}.cart li{display:flex;justify-content:space-between;gap:8px;padding:8px 16px;border-bottom:1px solid var(--line)}
+.cart .tot{display:flex;justify-content:space-between;padding:12px 16px;font-weight:700;font-size:16px}
+.cart .act{padding:0 16px 14px;display:flex;gap:8px}.empty{padding:14px 16px;color:var(--mute)}
+.msg{margin:0 16px 12px;padding:8px 10px;border-radius:8px;font-size:13px}.msg.err{background:rgba(200,68,27,.12);color:var(--warn)}.msg.ok{background:var(--chip);color:var(--brand)}
+</style>
+</head>
+<body>
+<header><h1>Fresh<span>Shop</span></h1><div class="date" id="today"></div></header>
+<main>
+  <div class="stats" id="stats"></div>
+  <div>
+    <section><h2>Expiry alerts <small id="alertNote" style="color:var(--mute);font-weight:400"></small><button id="writeoff">Write off expired</button></h2><div id="alerts"></div></section>
+    <section><h2>Products</h2><div id="products"></div></section>
+    <section><h2>Recent orders</h2><div id="orders"></div></section>
+  </div>
+  <aside class="cart"><section><h2>Checkout</h2><div id="cart"></div></section></aside>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const money = c => (c/100).toFixed(2);
+const esc = s => String(s).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+const cart = {};
+let products = [], message = null;
+
+async function api(path, opts) {
+  const r = await fetch('/api/' + path, opts);
+  const body = await r.json();
+  if (!r.ok) throw new Error(body.error || r.statusText);
+  return body;
+}
+
+function expiryBadge(p) {
+  if (!p.nearestExp) return '<span class="badge">no expiry</span>';
+  const cls = p.discountPercent >= 30 ? 'sale' : p.discountPercent > 0 ? 'soon' : '';
+  return `<span class="badge ${cls}">${p.nearestExp}</span>`;
+}
+
+function render(info, report, alerts, orders) {
+  $('today').textContent = 'Today: ' + info.today;
+  const low = alerts.filter(a => !a.expired).length, dead = alerts.filter(a => a.expired).length;
+  $('stats').innerHTML = [
+    ['Orders', report.orders, ''], ['Revenue', money(report.revenueCents), 'ok'],
+    ['Saved by markdowns', money(report.savedCents), 'ok'], ['Units sold', report.unitsSold, ''],
+    ['Expiring soon', low, low ? 'warn' : ''], ['Expired batches', dead, dead ? 'warn' : ''],
+    ['Written off', money(report.writtenOffCents), report.writtenOffCents ? 'warn' : '']
+  ].map(([l, v, c]) => `<div class="stat ${c}"><b>${v}</b><small>${l}</small></div>`).join('');
+
+  $('alertNote').textContent = '(next 7 days)';
+  $('alerts').innerHTML = alerts.length ? `<table><tr><th>Product</th><th>Batch</th><th class="n">Qty</th><th>Expires</th><th class="n">Markdown</th></tr>${
+    alerts.map(a => `<tr><td>${esc(a.name)}</td><td>${a.batchId}</td><td class="n">${a.qty}</td>
+      <td>${a.exp} <span class="badge ${a.expired ? 'sale' : 'soon'}">${a.expired ? 'expired' : a.daysLeft + ' d'}</span></td>
+      <td class="n">${a.expired ? '-' : a.discountPercent + '%'}</td></tr>`).join('')}</table>` : '<div class="empty">Nothing is close to expiring.</div>';
+
+  $('products').innerHTML = `<table><tr><th>Product</th><th>Category</th><th>Price</th><th class="n">Stock</th><th>Next expiry</th><th></th></tr>${
+    products.map(p => `<tr><td>${esc(p.name)}<br><small style="color:var(--mute)">${esc(p.sku)}</small></td><td>${esc(p.category)}</td>
+      <td>${p.discountPercent ? `<span class="old">${money(p.priceCents)}</span><b>${money(p.currentPriceCents)}</b> <span class="badge sale">-${p.discountPercent}%</span>` : money(p.priceCents)}</td>
+      <td class="n">${p.stock}</td><td>${expiryBadge(p)}</td>
+      <td><button data-add="${esc(p.sku)}" ${p.stock ? '' : 'disabled'}>Add</button></td></tr>`).join('')}</table>`;
+
+  $('orders').innerHTML = orders.length ? `<table><tr><th>Order</th><th>Items</th><th class="n">Saved</th><th class="n">Total</th></tr>${
+    orders.slice(-6).reverse().map(o => `<tr><td>${o.id}</td><td>${o.lines.map(l => esc(l.name) + ' ×' + l.qty).join(', ')}</td>
+      <td class="n">${money(o.savedCents)}</td><td class="n"><b>${money(o.totalCents)}</b></td></tr>`).join('')}</table>` : '<div class="empty">No orders yet.</div>';
+  renderCart();
+}
+
+function renderCart() {
+  const lines = Object.entries(cart).filter(([, q]) => q > 0);
+  let total = 0;
+  const rows = lines.map(([sku, q]) => {
+    const p = products.find(x => x.sku === sku);
+    total += p.currentPriceCents * q;
+    return `<li><span>${esc(p.name)} × ${q}</span><span>${money(p.currentPriceCents * q)} <button data-rm="${esc(sku)}">−</button></span></li>`;
+  }).join('');
+  const msg = message ? `<div class="msg ${message.ok ? 'ok' : 'err'}">${esc(message.text)}</div>` : '';
+  $('cart').innerHTML = (rows ? `<ul>${rows}</ul>` : '<div class="empty">Add products to start a sale.</div>') +
+    `<div class="tot"><span>Estimated total</span><span>${money(total)}</span></div>${msg}
+     <div class="act"><button class="primary" id="pay" ${lines.length ? '' : 'disabled'}>Complete sale</button><button id="clear" ${lines.length ? '' : 'disabled'}>Clear</button></div>`;
+}
+
+async function refresh() {
+  const [info, report, alerts, orders, list] = await Promise.all(
+    ['info', 'report', 'alerts?days=7', 'orders', 'products'].map(p => api(p)));
+  products = list;
+  render(info, report, alerts, orders);
+}
+
+document.addEventListener('click', async e => {
+  const t = e.target;
+  try {
+    if (t.dataset.add) { cart[t.dataset.add] = (cart[t.dataset.add] || 0) + 1; message = null; renderCart(); }
+    else if (t.dataset.rm) { cart[t.dataset.rm] = Math.max(0, (cart[t.dataset.rm] || 0) - 1); renderCart(); }
+    else if (t.id === 'clear') { for (const k in cart) delete cart[k]; message = null; renderCart(); }
+    else if (t.id === 'pay') {
+      const items = Object.entries(cart).filter(([, q]) => q > 0).map(([sku, qty]) => ({ sku, qty }));
+      const o = await api('orders', { method: 'POST', body: JSON.stringify({ items }) });
+      for (const k in cart) delete cart[k];
+      message = { ok: true, text: `Order ${o.id} completed: ${money(o.totalCents)} (saved ${money(o.savedCents)})` };
+      await refresh();
+    } else if (t.id === 'writeoff') {
+      const r = await api('writeoff', { method: 'POST', body: '{}' });
+      message = { ok: true, text: `Wrote off ${money(r.writtenOffCents)} of expired stock` };
+      await refresh();
+    }
+  } catch (err) { message = { ok: false, text: err.message }; renderCart(); }
+});
+
+refresh().catch(err => { document.body.insertAdjacentHTML('beforeend', '<p style="padding:20px">Cannot reach the API: ' + esc(err.message) + '</p>'); });
+</script>
+</body>
+</html>

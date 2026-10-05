@@ -1,0 +1,8 @@
+out/
+*.class
+shop-data.json
+demo-data.json
+*.tmp
+server.log
+.idea/
+.vscode/
